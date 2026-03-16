@@ -1,0 +1,27 @@
+{
+  "name": "skill-manager",
+  "version": "1.0.0",
+  "description": "CLI tool for installing and managing AI coding assistant skills",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "skill-manager": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "keywords": ["skill", "ai", "opencode", "claude-code"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "commander": "^14.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
