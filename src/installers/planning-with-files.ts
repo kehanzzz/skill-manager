@@ -77,9 +77,10 @@ export class PlanningWithFilesInstaller extends BaseInstaller {
       throw new Error(`${this.name} is not installed.`);
     }
     
-    const clonePath = info.clonePath;
-    if (!clonePath) {
-      throw new Error('Clone path not found in registry.');
+    const clonePath = info.clonePath || this.getClonePath();
+    if (!fs.existsSync(clonePath)) {
+      console.log(`Cloning ${this.repoUrl}...`);
+      clone(this.repoUrl, clonePath);
     }
     
     console.log(`Updating ${this.name}...`);
