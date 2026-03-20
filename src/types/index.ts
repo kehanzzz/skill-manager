@@ -2,7 +2,7 @@
 
 export type Platform = 'opencode' | 'claudecode' | 'generic';
 
-export type InstallMethod = 'symlink' | 'clone' | 'cli' | 'npm';
+export type InstallMethod = 'symlink' | 'clone' | 'cli' | 'npm' | 'uv';
 
 export interface SkillRecord {
   name: string;

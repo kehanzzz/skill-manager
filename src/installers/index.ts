@@ -3,12 +3,14 @@ import { SuperpowersInstaller } from './superpowers.js';
 import { PlanningWithFilesInstaller } from './planning-with-files.js';
 import { UiUxProMaxInstaller } from './ui-ux-pro-max.js';
 import { OpenSpecInstaller } from './openspec.js';
+import { SpecKitInstaller } from './spec-kit.js';
 
 const installers: SkillInstaller[] = [
   new SuperpowersInstaller(),
   new PlanningWithFilesInstaller(),
   new UiUxProMaxInstaller(),
   new OpenSpecInstaller(),
+  new SpecKitInstaller(),
 ];
 
 export const INSTALLERS: Record<string, SkillInstaller> = Object.fromEntries(
@@ -23,4 +25,4 @@ export function listInstallers(): SkillInstaller[] {
   return installers;
 }
 
-export { SuperpowersInstaller, PlanningWithFilesInstaller, UiUxProMaxInstaller, OpenSpecInstaller };
+export { SuperpowersInstaller, PlanningWithFilesInstaller, UiUxProMaxInstaller, OpenSpecInstaller, SpecKitInstaller };
