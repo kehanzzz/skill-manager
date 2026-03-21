@@ -12,7 +12,12 @@
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js"
   },
-  "keywords": ["skill", "ai", "opencode", "claude-code"],
+  "keywords": [
+    "skill",
+    "ai",
+    "opencode",
+    "claude-code"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {

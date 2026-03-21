@@ -647,7 +647,7 @@ import { createSymlink, removeSymlink } from '../core/symlink.js';
 
 export class SuperpowersInstaller extends BaseInstaller {
   name = 'superpowers';
-  repoUrl = 'https://github.com/obra/superpowers.git';
+  repoUrl = 'git@github.com:obra/superpowers.git';
   description = 'Superpowers skills for AI coding assistants (TDD, debugging, planning, etc.)';
   
   private getClonePath(): string {
