@@ -20,3 +20,20 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Sensitive files
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Local data
+.skill-manager/
