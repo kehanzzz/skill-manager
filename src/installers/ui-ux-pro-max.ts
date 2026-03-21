@@ -5,20 +5,12 @@ import { execSync } from 'child_process';
 import { Platform } from '../types/index.js';
 import { BaseInstaller } from './base.js';
 import { PATHS } from '../core/platform.js';
+import { ensureInstalled, getEnvWithBinPath } from '../core/deps.js';
 
 export class UiUxProMaxInstaller extends BaseInstaller {
   name = 'ui-ux-pro-max';
-  repoUrl = 'https://github.com/nextlevelbuilder/ui-ux-pro-max-skill';
+  repoUrl = 'git@github.com:nextlevelbuilder/ui-ux-pro-max-skill.git';
   description = 'UI/UX design intelligence with searchable database';
-  
-  private isUiproInstalled(): boolean {
-    try {
-      execSync('uipro --version', { stdio: 'ignore' });
-      return true;
-    } catch {
-      return false;
-    }
-  }
   
   private getPlatformArg(platform: Platform): string {
     const map: Record<Platform, string> = {
@@ -30,11 +22,7 @@ export class UiUxProMaxInstaller extends BaseInstaller {
   }
   
   async install(platforms: Platform[], force = false): Promise<void> {
-    if (!this.isUiproInstalled()) {
-      throw new Error(
-        'uipro CLI is required. Install it with: npm install -g uipro-cli'
-      );
-    }
+    await ensureInstalled('uipro-cli');
     
     if (this.isInstalled() && !force) {
       throw new Error(`${this.name} is already installed. Use --force to reinstall.`);
@@ -46,7 +34,8 @@ export class UiUxProMaxInstaller extends BaseInstaller {
     
     this.ensurePlatformDirs(platforms);
     
-    // 使用 uipro CLI 安装
+    const env = getEnvWithBinPath('uipro-cli');
+    
     for (const platform of platforms) {
       const aiArg = this.getPlatformArg(platform);
       
@@ -56,13 +45,12 @@ export class UiUxProMaxInstaller extends BaseInstaller {
         ? `uipro init --ai ${aiArg} --force`
         : `uipro init --ai ${aiArg}`;
       
-      execSync(cmd, { stdio: 'inherit' });
+      execSync(cmd, { stdio: 'inherit', env });
     }
     
-    // 获取版本信息
     let version = 'unknown';
     try {
-      const output = execSync('uipro --version', { encoding: 'utf-8' }).trim();
+      const output = execSync('uipro --version', { encoding: 'utf-8', env }).trim();
       version = output.replace(/^v?/, '');
     } catch {
       // ignore
@@ -86,23 +74,21 @@ export class UiUxProMaxInstaller extends BaseInstaller {
       throw new Error(`${this.name} is not installed.`);
     }
     
-    if (!this.isUiproInstalled()) {
-      throw new Error(
-        'uipro CLI is required. Install it with: npm install -g uipro-cli'
-      );
-    }
+    await ensureInstalled('uipro-cli');
     
     console.log(`Updating ${this.name}...`);
+    
+    const env = getEnvWithBinPath('uipro-cli');
     
     for (const platform of info.platforms) {
       const aiArg = this.getPlatformArg(platform);
       console.log(`Updating for ${platform}...`);
-      execSync(`uipro update --ai ${aiArg}`, { stdio: 'inherit' });
+      execSync(`uipro update --ai ${aiArg}`, { stdio: 'inherit', env });
     }
     
     let version = 'unknown';
     try {
-      const output = execSync('uipro --version', { encoding: 'utf-8' }).trim();
+      const output = execSync('uipro --version', { encoding: 'utf-8', env }).trim();
       version = output.replace(/^v?/, '');
     } catch {
       // ignore

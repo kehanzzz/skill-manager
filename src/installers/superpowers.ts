@@ -4,12 +4,13 @@ import path from 'path';
 import { Platform } from '../types/index.js';
 import { BaseInstaller } from './base.js';
 import { PATHS } from '../core/platform.js';
-import { clone, pull, getCommitSha, isGitInstalled } from '../core/git.js';
+import { clone, pull, getCommitSha } from '../core/git.js';
 import { createSymlink, removeSymlink } from '../core/symlink.js';
+import { ensureInstalled } from '../core/deps.js';
 
 export class SuperpowersInstaller extends BaseInstaller {
   name = 'superpowers';
-  repoUrl = 'https://github.com/obra/superpowers.git';
+  repoUrl = 'git@github.com:obra/superpowers.git';
   description = 'Superpowers skills for AI coding assistants (TDD, debugging, planning, etc.)';
   
   private getClonePath(): string {
@@ -17,9 +18,7 @@ export class SuperpowersInstaller extends BaseInstaller {
   }
   
   async install(platforms: Platform[], force = false): Promise<void> {
-    if (!isGitInstalled()) {
-      throw new Error('Git is required. Please install Git first.');
-    }
+    await ensureInstalled('git');
     
     const clonePath = this.getClonePath();
     

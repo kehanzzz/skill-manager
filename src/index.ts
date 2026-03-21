@@ -15,7 +15,7 @@ program
 
 program
   .command('install <skill>')
-  .description('Install a skill')
+  .description('Install a skill (use "all" to install all available skills)')
   .option('-p, --platform <platform>', 'Target platform (opencode, claudecode, generic)')
   .option('-a, --all', 'Install to all platforms')
   .option('-f, --force', 'Force reinstall')

@@ -6,7 +6,7 @@ import { PATHS } from '../core/platform.js';
 
 export class OpenSpecInstaller extends BaseInstaller {
   name = 'openspec';
-  repoUrl = 'https://github.com/Fission-AI/OpenSpec';
+  repoUrl = 'git@github.com:Fission-AI/OpenSpec.git';
   description = 'Spec-driven development (SDD) for AI coding assistants';
   
   private npmPackage = '@fission-ai/openspec';

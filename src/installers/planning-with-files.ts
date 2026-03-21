@@ -4,11 +4,12 @@ import path from 'path';
 import { Platform } from '../types/index.js';
 import { BaseInstaller } from './base.js';
 import { PATHS } from '../core/platform.js';
-import { clone, pull, getCommitSha, isGitInstalled } from '../core/git.js';
+import { clone, pull, getCommitSha } from '../core/git.js';
+import { ensureInstalled } from '../core/deps.js';
 
 export class PlanningWithFilesInstaller extends BaseInstaller {
   name = 'planning-with-files';
-  repoUrl = 'https://github.com/OthmanAdi/planning-with-files.git';
+  repoUrl = 'git@github.com:OthmanAdi/planning-with-files.git';
   description = 'Manus-style file-based planning for complex tasks';
   
   private getClonePath(): string {
@@ -16,9 +17,7 @@ export class PlanningWithFilesInstaller extends BaseInstaller {
   }
   
   async install(platforms: Platform[], force = false): Promise<void> {
-    if (!isGitInstalled()) {
-      throw new Error('Git is required. Please install Git first.');
-    }
+    await ensureInstalled('git');
     
     const clonePath = this.getClonePath();
     

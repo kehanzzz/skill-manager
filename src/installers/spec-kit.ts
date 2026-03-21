@@ -3,27 +3,22 @@ import { execSync } from 'child_process';
 import { Platform } from '../types/index.js';
 import { BaseInstaller } from './base.js';
 import { PATHS } from '../core/platform.js';
+import { ensureInstalled, isInstalled as isDepInstalled, getUvEnv, getUvToolBinDir } from '../core/deps.js';
+import chalk from 'chalk';
 
 export class SpecKitInstaller extends BaseInstaller {
   name = 'spec-kit';
-  repoUrl = 'https://github.com/github/spec-kit';
+  repoUrl = 'git@github.com:github/spec-kit.git';
   description = 'Spec-Driven Development toolkit for AI coding assistants';
   
   private cliName = 'specify-cli';
+  private gitUrl = 'https://github.com/github/spec-kit.git';
   private cliCommand = 'specify';
   
-  private isUvInstalled(): boolean {
-    try {
-      execSync('uv --version', { stdio: 'ignore' });
-      return true;
-    } catch {
-      return false;
-    }
-  }
-  
   private isSpecKitInstalled(): boolean {
+    const env = getUvEnv();
     try {
-      execSync(`${this.cliCommand} --help`, { stdio: 'ignore' });
+      execSync(`${this.cliCommand} --help`, { stdio: 'ignore', env });
       return true;
     } catch {
       return false;
@@ -31,8 +26,9 @@ export class SpecKitInstaller extends BaseInstaller {
   }
   
   private getVersion(): string {
+    const env = getUvEnv();
     try {
-      const output = execSync(`${this.cliCommand} version`, { encoding: 'utf-8' }).trim();
+      const output = execSync(`${this.cliCommand} version`, { encoding: 'utf-8', env }).trim();
       const match = output.match(/CLI Version\s+(\d+\.\d+\.\d+)/i);
       return match ? match[1] : 'unknown';
     } catch {
@@ -50,9 +46,9 @@ export class SpecKitInstaller extends BaseInstaller {
   }
   
   async install(platforms: Platform[], force = false): Promise<void> {
-    if (!this.isUvInstalled()) {
-      throw new Error('uv is not installed. Please install uv first: https://docs.astral.sh/uv/');
-    }
+    await ensureInstalled('uv');
+    
+    const env = getUvEnv();
     
     if (this.isSpecKitInstalled() && !force) {
       console.log(`Spec-Kit CLI is already installed globally (v${this.getVersion()}).`);
@@ -70,14 +66,15 @@ export class SpecKitInstaller extends BaseInstaller {
     
     if (force && this.isSpecKitInstalled()) {
       console.log('Reinstalling Spec-Kit CLI...');
-      execSync(`uv tool install ${this.cliName} --force --from git+${this.repoUrl}.git`, { stdio: 'inherit' });
+      execSync(`uv tool install ${this.cliName} --force --from git+${this.gitUrl}`, { stdio: 'inherit', env });
     } else {
       console.log('Installing Spec-Kit CLI globally via uv...');
-      execSync(`uv tool install ${this.cliName} --from git+${this.repoUrl}.git`, { stdio: 'inherit' });
+      execSync(`uv tool install ${this.cliName} --from git+${this.gitUrl}`, { stdio: 'inherit', env });
     }
     
     const version = this.getVersion();
     const primaryPath = path.join(PATHS[platforms[0]].skills, 'spec-kit');
+    const uvToolBin = getUvToolBinDir();
     
     this.recordInstall({
       method: 'uv',
@@ -86,6 +83,8 @@ export class SpecKitInstaller extends BaseInstaller {
     }, platforms);
     
     console.log(`\n✓ Spec-Kit CLI v${version} installed successfully!`);
+    console.log(chalk.gray(`\nTo use specify in new terminals, add to your shell config:`));
+    console.log(chalk.cyan(`  export PATH="${uvToolBin}:$PATH"`));
     console.log(`\nTo initialize Spec-Kit in your project, run:`);
     console.log(`  specify init --ai ${this.getToolId(platforms[0])}`);
     console.log(`\nOr to initialize in current directory:`);
@@ -98,13 +97,12 @@ export class SpecKitInstaller extends BaseInstaller {
       throw new Error(`${this.name} is not installed.`);
     }
     
-    if (!this.isUvInstalled()) {
-      throw new Error('uv is not installed. Please install uv first: https://docs.astral.sh/uv/');
-    }
+    await ensureInstalled('uv');
     
     console.log('Updating Spec-Kit CLI...');
     
-    execSync(`uv tool install ${this.cliName} --force --from git+${this.repoUrl}.git`, { stdio: 'inherit' });
+    const env = getUvEnv();
+    execSync(`uv tool install ${this.cliName} --force --from git+${this.gitUrl}`, { stdio: 'inherit', env });
     
     const version = this.getVersion();
     const now = new Date().toISOString();
@@ -118,12 +116,13 @@ export class SpecKitInstaller extends BaseInstaller {
   }
   
   async remove(purge = false): Promise<void> {
-    if (!this.isUvInstalled()) {
+    if (!isDepInstalled('uv')) {
       console.log('uv is not installed, skipping CLI removal.');
     } else {
       console.log('Removing Spec-Kit CLI...');
       try {
-        execSync(`uv tool uninstall ${this.cliName}`, { stdio: 'inherit' });
+        const env = getUvEnv();
+        execSync(`uv tool uninstall ${this.cliName}`, { stdio: 'inherit', env });
       } catch {
         console.log('Spec-Kit CLI was not installed or already removed.');
       }
