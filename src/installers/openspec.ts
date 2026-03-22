@@ -3,26 +3,16 @@ import { execSync } from 'child_process';
 import { Platform } from '../types/index.js';
 import { BaseInstaller } from './base.js';
 import { PATHS } from '../core/platform.js';
+import { ensureInstalled, getEnvWithBinPath, forceUpdate, isInstalledInUserDir } from '../core/deps.js';
 
 export class OpenSpecInstaller extends BaseInstaller {
   name = 'openspec';
   repoUrl = 'git@github.com:Fission-AI/OpenSpec.git';
   description = 'Spec-driven development (SDD) for AI coding assistants';
   
-  private npmPackage = '@fission-ai/openspec';
-  
-  private isOpenSpecInstalled(): boolean {
+  private getVersion(env: NodeJS.ProcessEnv): string {
     try {
-      execSync('openspec --version', { stdio: 'ignore' });
-      return true;
-    } catch {
-      return false;
-    }
-  }
-  
-  private getVersion(): string {
-    try {
-      const output = execSync('openspec --version', { encoding: 'utf-8' }).trim();
+      const output = execSync('openspec --version', { encoding: 'utf-8', env }).trim();
       return output.replace(/^v?/, '');
     } catch {
       return 'unknown';
@@ -39,29 +29,25 @@ export class OpenSpecInstaller extends BaseInstaller {
   }
   
   async install(platforms: Platform[], force = false): Promise<void> {
-    if (this.isOpenSpecInstalled() && !force) {
-      console.log(`OpenSpec CLI is already installed globally (v${this.getVersion()}).`);
+    if (isInstalledInUserDir('openspec') && !force) {
+      const env = getEnvWithBinPath('openspec');
+      console.log(`OpenSpec CLI is already installed (v${this.getVersion(env)}).`);
       console.log(`Run 'openspec init --tools ${platforms.map(p => this.getToolId(p)).join(',')}' in your project to configure.`);
       
       const primaryPath = path.join(PATHS[platforms[0]].skills, 'openspec');
       this.recordInstall({
         method: 'npm',
         targetPath: primaryPath,
-        version: this.getVersion(),
+        version: this.getVersion(env),
       }, platforms);
       
       return;
     }
     
-    if (force && this.isOpenSpecInstalled()) {
-      console.log('Reinstalling OpenSpec CLI...');
-      execSync(`npm install -g ${this.npmPackage}@latest`, { stdio: 'inherit' });
-    } else {
-      console.log('Installing OpenSpec CLI globally...');
-      execSync(`npm install -g ${this.npmPackage}@latest`, { stdio: 'inherit' });
-    }
+    await forceUpdate('openspec');
     
-    const version = this.getVersion();
+    const env = getEnvWithBinPath('openspec');
+    const version = this.getVersion(env);
     const primaryPath = path.join(PATHS[platforms[0]].skills, 'openspec');
     
     this.recordInstall({
@@ -81,14 +67,15 @@ export class OpenSpecInstaller extends BaseInstaller {
       throw new Error(`${this.name} is not installed.`);
     }
     
-    console.log('Updating OpenSpec CLI...');
+    await forceUpdate('openspec');
     
-    execSync(`npm install -g ${this.npmPackage}@latest`, { stdio: 'inherit' });
-    
-    const version = this.getVersion();
+    const env = getEnvWithBinPath('openspec');
+    const version = this.getVersion(env);
     const now = new Date().toISOString();
+    const primaryPath = path.join(PATHS[info.platforms[0]].skills, 'openspec');
     
     this.recordInstall({
+      targetPath: primaryPath,
       version,
       updatedAt: now,
     }, info.platforms);
@@ -102,9 +89,10 @@ export class OpenSpecInstaller extends BaseInstaller {
     console.log('Removing OpenSpec CLI...');
     
     try {
-      execSync(`npm uninstall -g ${this.npmPackage}`, { stdio: 'inherit' });
+      const env = getEnvWithBinPath('openspec');
+      execSync('npm uninstall --prefix ~/.npm-global @fission-ai/openspec', { stdio: 'inherit', env });
     } catch {
-      console.log('OpenSpec CLI was not installed globally or already removed.');
+      console.log('OpenSpec CLI was not installed or already removed.');
     }
     
     this.recordRemove();

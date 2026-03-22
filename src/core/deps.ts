@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import chalk from 'chalk';
 
-export type DepName = 'git' | 'uv' | 'uipro-cli';
+export type DepName = 'git' | 'uv' | 'uipro-cli' | 'openspec';
 
 interface DepInfo {
   name: string;
@@ -59,6 +59,24 @@ const DEPS: Record<DepName, DepInfo> = {
       return true;
     },
   },
+  openspec: {
+    name: 'OpenSpec CLI',
+    description: 'Spec-driven development CLI',
+    checkCommand: 'openspec --version',
+    installCommands: {},
+    binPath: npmBinDir,
+    customInstall: () => {
+      if (!fs.existsSync(npmGlobalDir)) {
+        fs.mkdirSync(npmGlobalDir, { recursive: true });
+      }
+      execSync(`npm install --prefix ${npmGlobalDir} @fission-ai/openspec`, { stdio: 'inherit' });
+      
+      console.log(chalk.gray(`\nTo use openspec in new terminals, add to your shell config:`));
+      console.log(chalk.cyan(`  export PATH="${npmBinDir}:$PATH"`));
+      
+      return true;
+    },
+  },
 };
 
 function getPlatform(): 'darwin' | 'linux' | 'other' {
@@ -70,21 +88,39 @@ function getPlatform(): 'darwin' | 'linux' | 'other' {
 
 export function isInstalled(dep: DepName): boolean {
   const info = DEPS[dep];
+  
+  // For npm packages with binPath, check user directory first
+  if (info.binPath) {
+    try {
+      const cmd = info.checkCommand.split(' ')[0];
+      const fullPath = path.join(info.binPath, cmd);
+      execSync(`${fullPath} --version`, { stdio: 'ignore' });
+      process.env.PATH = `${info.binPath}:${process.env.PATH || ''}`;
+      return true;
+    } catch {
+      // Not in user directory, fall through to global check
+    }
+  }
+  
+  // Check global installation
   try {
     execSync(info.checkCommand, { stdio: 'ignore' });
     return true;
   } catch {
-    if (info.binPath) {
-      try {
-        const cmd = info.checkCommand.split(' ')[0];
-        const fullPath = path.join(info.binPath, cmd);
-        execSync(`${fullPath} --version`, { stdio: 'ignore' });
-        process.env.PATH = `${info.binPath}:${process.env.PATH || ''}`;
-        return true;
-      } catch {
-        return false;
-      }
-    }
+    return false;
+  }
+}
+
+export function isInstalledInUserDir(dep: DepName): boolean {
+  const info = DEPS[dep];
+  if (!info.binPath) return false;
+  
+  try {
+    const cmd = info.checkCommand.split(' ')[0];
+    const fullPath = path.join(info.binPath, cmd);
+    execSync(`${fullPath} --version`, { stdio: 'ignore' });
+    return true;
+  } catch {
     return false;
   }
 }
@@ -178,5 +214,23 @@ export async function ensureInstalled(dep: DepName): Promise<void> {
       console.log(chalk.gray(`Please install manually: ${info.manualInstallUrl}`));
     }
     throw new Error(`Failed to install ${info.name}.`);
+  }
+}
+
+export async function forceUpdate(dep: DepName): Promise<void> {
+  const info = DEPS[dep];
+  
+  if (!info.binPath || !info.customInstall) {
+    throw new Error(`${info.name} does not support auto-update.`);
+  }
+  
+  console.log(chalk.yellow(`Updating ${info.name}...`));
+  
+  try {
+    info.customInstall();
+    console.log(chalk.green(`✓ ${info.name} updated successfully!`));
+  } catch (error) {
+    console.error(chalk.red(`Failed to update ${info.name}.`));
+    throw new Error(`Failed to update ${info.name}.`);
   }
 }
