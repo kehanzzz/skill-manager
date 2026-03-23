@@ -72,8 +72,8 @@ async function installAllSkills(platforms: Platform[], force?: boolean): Promise
   console.log(chalk.cyan(`\nInstalling all skills to: ${platforms.join(', ')}\n`));
   
   for (const installer of installers) {
-    if (!force && installer.isInstalled()) {
-      console.log(chalk.yellow(`  ○ ${installer.name} - already installed, skip`));
+    if (!force && installer.isInstalled(platforms)) {
+      console.log(chalk.yellow(`  ○ ${installer.name} - already installed on ${platforms.join(', ')}, skip`));
       results.push({ name: installer.name, status: 'skipped' });
       continue;
     }

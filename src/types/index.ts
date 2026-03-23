@@ -26,11 +26,11 @@ export interface SkillInstaller {
   name: string;
   repoUrl: string;
   description: string;
-  
+
   install(platforms: Platform[], force?: boolean): Promise<void>;
   update(): Promise<void>;
   remove(purge?: boolean): Promise<void>;
-  isInstalled(): boolean;
+  isInstalled(platforms?: Platform[]): boolean;
   getInfo(): SkillRecord | null;
 }
 

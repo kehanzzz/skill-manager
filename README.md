@@ -21,6 +21,19 @@ npm run build
 npm link
 ```
 
+## Upgrading
+
+To upgrade to the latest version:
+
+```bash
+cd skill-manager
+git pull
+npm install
+npm run build
+```
+
+The global `skill-manager` command will automatically use the updated version.
+
 ## Usage
 
 ```bash

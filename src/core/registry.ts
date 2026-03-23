@@ -1,6 +1,6 @@
 // src/core/registry.ts
 import fs from 'fs';
-import { Registry, SkillRecord } from '../types/index.js';
+import { Registry, SkillRecord, Platform } from '../types/index.js';
 import { PATHS } from './platform.js';
 
 const DEFAULT_REGISTRY: Registry = {
@@ -50,7 +50,10 @@ export function listSkills(): SkillRecord[] {
   return Object.values(registry.skills);
 }
 
-export function isSkillInstalled(name: string): boolean {
+export function isSkillInstalled(name: string, platforms?: Platform[]): boolean {
   const info = getSkillInfo(name);
-  return info !== null;
+  if (!info) return false;
+  if (!platforms || platforms.length === 0) return true;
+  // 检查是否已安装到所有请求的platforms
+  return platforms.every(p => info.platforms.includes(p));
 }

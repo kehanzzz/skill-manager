@@ -6,12 +6,16 @@ import { updateCommand } from './commands/update.js';
 import { listCommand } from './commands/list.js';
 import { removeCommand } from './commands/remove.js';
 
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const { version } = require('../package.json');
+
 const program = new Command();
 
 program
   .name('skill-manager')
   .description('Manage AI coding assistant skills')
-  .version('1.0.0');
+  .version(version);
 
 program
   .command('install <skill>')

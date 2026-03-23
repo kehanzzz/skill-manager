@@ -18,13 +18,13 @@ export class PlanningWithFilesInstaller extends BaseInstaller {
   
   async install(platforms: Platform[], force = false): Promise<void> {
     await ensureInstalled('git');
-    
+
     const clonePath = this.getClonePath();
-    
-    if (this.isInstalled() && !force) {
-      throw new Error(`${this.name} is already installed. Use --force to reinstall.`);
+
+    if (this.isInstalled(platforms) && !force) {
+      throw new Error(`${this.name} is already installed on ${platforms.join(', ')}. Use --force to reinstall.`);
     }
-    
+
     if (force && this.isInstalled()) {
       await this.remove(false);
     }

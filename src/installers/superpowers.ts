@@ -19,14 +19,14 @@ export class SuperpowersInstaller extends BaseInstaller {
   
   async install(platforms: Platform[], force = false): Promise<void> {
     await ensureInstalled('git');
-    
+
     const clonePath = this.getClonePath();
-    
-    // 检查是否已安装
-    if (this.isInstalled() && !force) {
-      throw new Error(`${this.name} is already installed. Use --force to reinstall.`);
+
+    // 检查是否已在目标平台安装
+    if (this.isInstalled(platforms) && !force) {
+      throw new Error(`${this.name} is already installed on ${platforms.join(', ')}. Use --force to reinstall.`);
     }
-    
+
     // 强制重装时先移除
     if (force && this.isInstalled()) {
       await this.remove(false);

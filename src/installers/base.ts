@@ -1,7 +1,7 @@
 // src/installers/base.ts
 import { SkillInstaller, SkillRecord, Platform } from '../types/index.js';
 import { PATHS, ensureDirectories } from '../core/platform.js';
-import { registerSkill, unregisterSkill, getSkillInfo } from '../core/registry.js';
+import { registerSkill, unregisterSkill, getSkillInfo, isSkillInstalled } from '../core/registry.js';
 
 export abstract class BaseInstaller implements SkillInstaller {
   abstract name: string;
@@ -12,8 +12,8 @@ export abstract class BaseInstaller implements SkillInstaller {
   abstract update(): Promise<void>;
   abstract remove(purge?: boolean): Promise<void>;
   
-  isInstalled(): boolean {
-    return getSkillInfo(this.name) !== null;
+  isInstalled(platforms?: Platform[]): boolean {
+    return isSkillInstalled(this.name, platforms);
   }
   
   getInfo(): SkillRecord | null {
